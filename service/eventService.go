@@ -3,6 +3,7 @@ package service
 import (
 	"encoding/json"
 	"ev-events-ms/models"
+	"ev-events-ms/repository"
 	u "ev-events-ms/utils"
 	"fmt"
 	"github.com/gorilla/mux"
@@ -11,129 +12,129 @@ import (
 )
 
 func GetEvents(w http.ResponseWriter, r *http.Request) () {
-	events := make([] *models.Event, 0)
-
-	err := models.GetDB().Table("events").Find(&events).Error
+	events,err := repository.GetEvents()
 	if err != nil {
 		fmt.Println(err)
+		w.WriteHeader(http.StatusInternalServerError)
 		u.Respond(w, u.Message(false, "Database Connection error"))
 		return
 	}
-
 	w.WriteHeader(http.StatusOK)
 	u.Respond(w, events)
 }
 
 func GetEventById(w http.ResponseWriter, r *http.Request) () {
-	event := &models.Event{}
-
-	id,err := strconv.Atoi(mux.Vars(r)["id"]) // get ID from url request
-	if err != nil || id<1 { //ID is not valid
-		u.Respond(w, u.Message(false, "Invalid Id")) // REVISAR ERROR AL IMPLEMENTAR HASH
-		return
-	}
-
-	dbErr := models.GetDB().First(event,id).Error // search in
-	if dbErr != nil {                                 //User not found!
+	id := mux.Vars(r)["id"] // get ID from url request
+	//id,err := (mux.Vars(r)["id"]) // get ID from url request
+	//if err != nil || id<1 { //ID is not valid
+	//	w.WriteHeader(http.StatusBadRequest)
+	//	u.Respond(w, u.Message(false, "Invalid Id")) // REVISAR ERROR AL IMPLEMENTAR HASH
+	//	return
+	//}
+	event,dbErr := repository.GetEventById(id)
+	if dbErr != nil {
+		w.WriteHeader(http.StatusNotFound)
 		u.Respond(w, u.Message(false, "User not found"))
 		return
 	}
-
 	w.WriteHeader(http.StatusOK)
 	u.Respond(w, event)
 }
 
 func CreateEvent (w http.ResponseWriter, r *http.Request) {
-	fmt.Println("prueba")
 	event := &models.Event{}
-
 	decErr := json.NewDecoder(r.Body).Decode(event) //decode the request body into struct and failed if any error occur
 	if decErr != nil {
+		w.WriteHeader(http.StatusBadRequest)
 		u.Respond(w, u.Message(false, "Invalid request"))
 		return
 	}
+	_, createdErr := repository.GetEventById(event.ID) // check if event already exists
+fmt.Println(createdErr.Error())
 
-	//event.Validate()
-	creationErr := models.GetDB().Create(event).Error
-	if creationErr != nil {
-		u.Respond(w, u.Message(false, "Database Problem"))
+	if createdErr == nil {
+		w.WriteHeader(http.StatusInternalServerError)
+		u.Respond(w, u.Message(false, "Event already Exists"))
 		return
 	}
-
+	//event.Validate()
+	creationErr := repository.CreateEvent(event)
+	if creationErr != nil {
+		w.WriteHeader(http.StatusInternalServerError)
+		u.Respond(w, u.Message(false, creationErr.Error()))
+		return
+	}
 	w.WriteHeader(http.StatusCreated)
 	u.Respond(w, event)
 }
 
 func DeleteEvent(w http.ResponseWriter, r *http.Request) ()  {
-	event := &models.Event{}
-
 	id,err := strconv.Atoi(mux.Vars(r)["id"]) // getting id from url request
 	if err != nil || id<1 { //User not found!
+		w.WriteHeader(http.StatusBadRequest)
 		u.Respond(w, u.Message(false, "Invalid Id"))
 		return
 	}
-
-	dbErr := models.GetDB().First(event,id).Error // search user in db and failed if it doesn't exist
-	if dbErr != nil {                                 //User not found!
+	delErr1,delErr2 := repository.DeleteEvent(id)
+	if delErr1 != nil {
+		w.WriteHeader(http.StatusNotFound)//User not found!
 		u.Respond(w, u.Message(false, "User not found"))
 		return
 	}
-
-	dbEditErr := models.GetDB().Delete(&event).Error
-	if dbEditErr != nil {
-		fmt.Println(dbEditErr)
+	if delErr2 != nil{
+		w.WriteHeader(http.StatusInternalServerError)
 		u.Respond(w, u.Message(false, "Database Connection error"))
 		return
 	}
 	resp := u.Message(true, "Event deleted successfully")
-
-	w.WriteHeader(http.StatusNoContent)
+	w.WriteHeader(http.StatusOK)
 	u.Respond(w, resp)
 }
 
 func EditEvent(w http.ResponseWriter, r *http.Request) () {
 	event := &models.Event{}
 	editedEvent := &models.Event{}
-
 	decodeErr := json.NewDecoder(r.Body).Decode(editedEvent) //decode the request body into struct and failed if any error occur
 	if decodeErr != nil {
+		w.WriteHeader(http.StatusBadRequest)
 		u.Respond(w, u.Message(false, "Invalid request"))
 		return
 	}
-
-	id,idErr := strconv.Atoi(mux.Vars(r)["id"]) // getting id from url request  and failed if id is not int
-	if idErr != nil || id<1 {
-		u.Respond(w, u.Message(false, "Invalid Id"))
-		return
-	}
-
-	dbErr := models.GetDB().First(event,id).Error // search user in db and failed if it doesn't exist
-	if dbErr != nil {                                 //User not found!
+	id := mux.Vars(r)["id"] // getting id from url request  and failed if id is not int
+	//id,idErr := strconv.Atoi(mux.Vars(r)["id"]) // getting id from url request  and failed if id is not int
+	//if idErr != nil || id<1 {
+	//	w.WriteHeader(http.StatusBadRequest)
+	//	u.Respond(w, u.Message(false, "Invalid Id"))
+	//	return
+	//}
+	event, dbErr := repository.GetEventById(id) // search user in db and failed if it doesn't exist
+	if dbErr != nil {                           //User not found!
+		w.WriteHeader(http.StatusNotFound)
 		u.Respond(w, u.Message(false, "User not found"))
 		return
 	}
 
-	updateValues(event,editedEvent) // update the values
+	updateEventValues(event,editedEvent) // update the values
 
-	dbEditErr := models.GetDB().Save(&event).Error
+	dbEditErr := repository.EditEvent(event)
 	if dbEditErr != nil {
 		fmt.Println(dbEditErr)
+		w.WriteHeader(http.StatusInternalServerError)
 		u.Respond(w, u.Message(false, "Database Connection error"))
 		return
 	}
 	resp := u.Message(true, "Event deleted successfully")
 	resp["event"] = event
-
 	w.WriteHeader(http.StatusOK)
 	u.Respond(w, resp)
 }
 
-func updateValues(event *models.Event,editedEvent *models.Event)  {
+var updateEventValues = func (event *models.Event,editedEvent *models.Event)  {
 	event.Description = editedEvent.Description
 	event.Name = editedEvent.Name
 	event.EventStartDate = editedEvent.EventStartDate
 	event.EventFinishDate = editedEvent.EventFinishDate
 	event.Status = editedEvent.Status
-	event.Url = editedEvent.Url
+	//event.Url = editedEvent.Url
 }
 

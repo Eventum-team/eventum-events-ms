@@ -2,12 +2,12 @@ package models
 
 import (
 	u "ev-events-ms/utils"
-	"github.com/jinzhu/gorm"
 )
 
 type Event struct {
-	gorm.Model
-	EventId string
+	//gorm.Model
+	ID string
+	Counter uint64 `gorm:"auto_increment"`
 	OwnerId string
 	OwnerType string
 	Description string
@@ -15,7 +15,7 @@ type Event struct {
 	EventStartDate string
 	EventFinishDate string
 	Status string
-	Url string
+	//Url string
 	Location Location `gorm:"foreignkey:EventId"`
 }
 

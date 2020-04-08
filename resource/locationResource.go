@@ -4,10 +4,9 @@ import "ev-events-ms/service"
 
 func HandleLocationRequests()  {
 	router := GetRouter()
-
-	router.HandleFunc("/location", service.GetLocations).Methods("GET")
-	router.HandleFunc("/location/{id}", service.GetLocationByEventId).Methods(" GET")
-	router.HandleFunc("/location", service.CreateLocation).Methods("POST")
-	router.HandleFunc("/location/{id}", service.EditLocationByEventId).Methods(" PUT")
-	router.HandleFunc("/location/{id}", service.DeleteLocationByEventId).Methods(" DELETE")
+	router.HandleFunc("/locations", service.GetLocations).Methods("GET")
+	router.HandleFunc("/locations/{id}", service.GetLocationById).Methods(" GET")
+	router.HandleFunc("/locations", service.CreateLocation).Methods("POST")
+	router.HandleFunc("/locations/{id}", service.EditLocation).Methods(" PUT")
+	router.HandleFunc("/locations/{id}", service.DeleteLocation).Methods(" DELETE")
 }

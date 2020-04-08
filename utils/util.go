@@ -12,6 +12,9 @@ func Message(status bool, message string) (map[string]interface{}) {
 
 func Respond(w http.ResponseWriter, data interface{} ) {
 	w.Header().Add("Content-Type", "application/json")
-	json.NewEncoder(w).Encode(data)
+	err := json.NewEncoder(w).Encode(data)
+	if err != nil{
+		print("Problems encoding data to Json format")
+	}
 }
 

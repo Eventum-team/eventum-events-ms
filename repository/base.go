@@ -1,6 +1,7 @@
-package models
+package repository
 
 import (
+	"ev-events-ms/models"
 	"fmt"
 	"github.com/jinzhu/gorm"
 	_ "github.com/jinzhu/gorm/dialects/postgres"
@@ -33,8 +34,7 @@ func init() {
 	}
 
 	db = conn
-
-	db.Debug().AutoMigrate(&Event{}, &Location{})
+	db.Debug().AutoMigrate(&models.Event{}, &models.Location{})
 }
 
 func GetDB() *gorm.DB {
