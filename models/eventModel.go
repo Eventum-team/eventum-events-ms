@@ -19,19 +19,7 @@ type Event struct {
 	Location Location `gorm:"foreignkey:EventId"`
 }
 
-func (event *Event) validate() (map[string]interface{}, bool) {
+func (event *Event) Validate() (map[string]interface{}, bool) {
 	return u.Message(false, "Requirement passed"), true
 }
 
-func (event *Event) Create() (map[string] interface{}) {
-
-	GetDB().Create(event)
-
-	//if event.ID <= 0 {
-	//	return u.Message(false, "Failed to create account, connection error.")
-	//}
-
-	response := u.Message(true, "Event has been created")
-	response["event"] = event
-	return response
-}

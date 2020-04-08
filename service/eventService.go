@@ -19,10 +19,9 @@ func GetEvents(w http.ResponseWriter, r *http.Request) () {
 		u.Respond(w, u.Message(false, "Database Connection error"))
 		return
 	}
-	resp := u.Message(true, "success")
-	resp["events"] = events
-	u.Respond(w, resp)
 
+	w.WriteHeader(http.StatusOK)
+	u.Respond(w, events)
 }
 
 func GetEventById(w http.ResponseWriter, r *http.Request) () {
@@ -39,24 +38,30 @@ func GetEventById(w http.ResponseWriter, r *http.Request) () {
 		u.Respond(w, u.Message(false, "User not found"))
 		return
 	}
-	resp := u.Message(true, "success")
-	resp["event"] = event
-	u.Respond(w, resp)
+
+	w.WriteHeader(http.StatusOK)
+	u.Respond(w, event)
 }
 
-var CreateEvent = func(w http.ResponseWriter, r *http.Request) {
+func CreateEvent (w http.ResponseWriter, r *http.Request) {
+	fmt.Println("prueba")
 	event := &models.Event{}
 
-	err := json.NewDecoder(r.Body).Decode(event) //decode the request body into struct and failed if any error occur
-	if err != nil {
+	decErr := json.NewDecoder(r.Body).Decode(event) //decode the request body into struct and failed if any error occur
+	if decErr != nil {
 		u.Respond(w, u.Message(false, "Invalid request"))
 		return
 	}
 
-	//VALIDACION DE CAMPOS
+	//event.Validate()
+	creationErr := models.GetDB().Create(event).Error
+	if creationErr != nil {
+		u.Respond(w, u.Message(false, "Database Problem"))
+		return
+	}
 
-	resp := event.Create() //Create account
-	u.Respond(w, resp)
+	w.WriteHeader(http.StatusCreated)
+	u.Respond(w, event)
 }
 
 func DeleteEvent(w http.ResponseWriter, r *http.Request) ()  {
@@ -80,7 +85,9 @@ func DeleteEvent(w http.ResponseWriter, r *http.Request) ()  {
 		u.Respond(w, u.Message(false, "Database Connection error"))
 		return
 	}
-	resp := u.Message(true, "success")
+	resp := u.Message(true, "Event deleted successfully")
+
+	w.WriteHeader(http.StatusNoContent)
 	u.Respond(w, resp)
 }
 
@@ -114,8 +121,10 @@ func EditEvent(w http.ResponseWriter, r *http.Request) () {
 		u.Respond(w, u.Message(false, "Database Connection error"))
 		return
 	}
-	resp := u.Message(true, "success")
+	resp := u.Message(true, "Event deleted successfully")
 	resp["event"] = event
+
+	w.WriteHeader(http.StatusOK)
 	u.Respond(w, resp)
 }
 
