@@ -1,8 +1,8 @@
 package models
 
 import (
-	"github.com/jinzhu/gorm"
 	u "ev-events-ms/utils"
+	"github.com/jinzhu/gorm"
 )
 
 type Event struct {
