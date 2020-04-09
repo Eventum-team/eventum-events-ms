@@ -13,7 +13,6 @@ var (
 	db *gorm.DB
 )
 
-
 func init() {
 
 	e := godotenv.Load() // load DB info from env file
@@ -34,7 +33,7 @@ func init() {
 	}
 
 	db = conn
-	//db.Model(&models.Location{}).AddForeignKey("event_id", "events(id)", "RESTRICT", "RESTRICT")
+	db.Model(&models.Location{}).AddForeignKey("event_id", "events(id)", "RESTRICT", "RESTRICT")
 	db.Debug().AutoMigrate(&models.Event{}, &models.Location{})
 }
 

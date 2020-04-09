@@ -4,9 +4,7 @@ import (
 	u "ev-events-ms/utils"
 )
 type Location struct {
-	//gorm.Model
 	ID uint64 `gorm:"auto_increment;primary_key"`
-	LocationType string
 	Latitude string
 	Longitude string
 	EventID string

@@ -25,13 +25,7 @@ func GetEvents(w http.ResponseWriter, r *http.Request) () {
 
 func GetEventById(w http.ResponseWriter, r *http.Request) () {
 	id := mux.Vars(r)["id"] // get ID from url request
-	//id,err := (mux.Vars(r)["id"]) // get ID from url request
-	//if err != nil || id<1 { //ID is not valid
-	//	w.WriteHeader(http.StatusBadRequest)
-	//	u.Respond(w, u.Message(false, "Invalid Id")) // REVISAR ERROR AL IMPLEMENTAR HASH
-	//	return
-	//}
-	event,dbErr := repository.GetEventById(id)
+	event,_,dbErr := repository.GetEventById(id)
 	if dbErr != nil {
 		w.WriteHeader(http.StatusNotFound)
 		u.Respond(w, u.Message(false, "User not found"))
@@ -49,7 +43,7 @@ func CreateEvent (w http.ResponseWriter, r *http.Request) {
 		u.Respond(w, u.Message(false, "Invalid request"))
 		return
 	}
-	_, createdErr := repository.GetEventById(event.ID) // check if event already exists
+	_,_, createdErr := repository.GetEventById(event.ID) // check if event already exists
 	if createdErr == nil {
 		w.WriteHeader(http.StatusInternalServerError)
 		u.Respond(w, u.Message(false, "Event already Exists"))
@@ -98,14 +92,8 @@ func EditEvent(w http.ResponseWriter, r *http.Request) () {
 		u.Respond(w, u.Message(false, "Invalid request"))
 		return
 	}
-	id := mux.Vars(r)["id"] // getting id from url request  and failed if id is not int
-	//id,idErr := strconv.Atoi(mux.Vars(r)["id"]) // getting id from url request  and failed if id is not int
-	//if idErr != nil || id<1 {
-	//	w.WriteHeader(http.StatusBadRequest)
-	//	u.Respond(w, u.Message(false, "Invalid Id"))
-	//	return
-	//}
-	event, dbErr := repository.GetEventById(id) // search user in db and failed if it doesn't exist
+	id := mux.Vars(r)["id"]
+	event,_, dbErr := repository.GetEventById(id) // search user in db and failed if it doesn't exist
 	if dbErr != nil {                           //User not found!
 		w.WriteHeader(http.StatusNotFound)
 		u.Respond(w, u.Message(false, "User not found"))

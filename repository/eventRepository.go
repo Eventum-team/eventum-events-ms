@@ -2,6 +2,7 @@ package repository
 
 import (
 	"ev-events-ms/models"
+	"fmt"
 )
 
 func GetEvents() (events [] *models.Event,err error)  {
@@ -11,23 +12,13 @@ func GetEvents() (events [] *models.Event,err error)  {
 	return
 }
 
-func GetEventById(id string ) (event *models.Event,err error) {
+func GetEventById(id string ) (event *models.Event,location *models.Location,err error) {
 	event = &models.Event{}
-
-	//location, err := GetLocationByEventId(id)
-	//if err != nil {
-	//	fmt.Println("No location found")
-	//}
+	location, err = GetLocationByEventId(id)
+	if err != nil {
+		fmt.Println("No location found")
+	}
 	err = GetDB().First(event, id).Error
-
-	//event.Location = models.Location{
-	//	Latitude: location.Latitude,
-	//	Longitude: location.Longitude,
-	//	LocationType: location.LocationType,
-	//	ID: location.ID,
-	//	EventID: location.EventID,
-	//
-	//}
 	return
 }
 

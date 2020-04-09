@@ -5,7 +5,6 @@ import (
 )
 
 type Event struct {
-	//gorm.Model
 	ID string
 	Counter uint64 `gorm:"auto_increment"`
 	OwnerId string
@@ -16,9 +15,11 @@ type Event struct {
 	EventFinishDate string
 	Status string
 	Url string
-	Location []Location `gorm:"foreignkey:EventID"`
+	Latitude string
+	Longitude string
 
 }
+
 
 func (event *Event) Validate() (map[string]interface{}, bool) {
 	return u.Message(false, "Requirement passed"), true
