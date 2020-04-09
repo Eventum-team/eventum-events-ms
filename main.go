@@ -11,7 +11,7 @@ import (
 func main() {
 
 	resource.HandleEventRequests()
-	resource.HandleLocationRequests()
+	resource.HandleEventFilterRequests()
 	resource.HandleErrorRequests()
 
 	port := os.Getenv("PORT") //setting port according to .env info

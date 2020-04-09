@@ -2,6 +2,7 @@ package models
 
 import (
 	u "ev-events-ms/utils"
+	"time"
 )
 
 type Event struct {
@@ -11,8 +12,8 @@ type Event struct {
 	OwnerType string
 	Description string
 	Name string
-	EventStartDate string
-	EventFinishDate string
+	EventStartDate time.Time
+	EventFinishDate time.Time
 	Status string
 	Url string
 	Latitude string

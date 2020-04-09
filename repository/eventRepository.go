@@ -2,22 +2,16 @@ package repository
 
 import (
 	"ev-events-ms/models"
-	"fmt"
 )
 
 func GetEvents() (events [] *models.Event,err error)  {
 	events = make([]*models.Event, 0)
 	err = GetDB().Table("events").Find(&events).Error
-
 	return
 }
 
-func GetEventById(id string ) (event *models.Event,location *models.Location,err error) {
+func GetEventById(id string ) (event *models.Event,err error) {
 	event = &models.Event{}
-	location, err = GetLocationByEventId(id)
-	if err != nil {
-		fmt.Println("No location found")
-	}
 	err = GetDB().First(event, id).Error
 	return
 }
@@ -27,7 +21,7 @@ func CreateEvent(event *models.Event) (err error) {
 	return
 }
 
-func DeleteEvent(id int) (err1 error,err2 error)  {
+func DeleteEvent(id string) (err1 error,err2 error)  {
 	event := &models.Event{}
 	err1 = GetDB().First(event,id).Error
 	if err1 != nil {

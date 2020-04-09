@@ -8,7 +8,6 @@ import (
 	"fmt"
 	"github.com/gorilla/mux"
 	"net/http"
-	"strconv"
 )
 
 func GetEvents(w http.ResponseWriter, r *http.Request) () {
@@ -25,7 +24,7 @@ func GetEvents(w http.ResponseWriter, r *http.Request) () {
 
 func GetEventById(w http.ResponseWriter, r *http.Request) () {
 	id := mux.Vars(r)["id"] // get ID from url request
-	event,_,dbErr := repository.GetEventById(id)
+	event,dbErr := repository.GetEventById(id)
 	if dbErr != nil {
 		w.WriteHeader(http.StatusNotFound)
 		u.Respond(w, u.Message(false, "User not found"))
@@ -39,11 +38,12 @@ func CreateEvent (w http.ResponseWriter, r *http.Request) {
 	event := &models.Event{}
 	decErr := json.NewDecoder(r.Body).Decode(event) //decode the request body into struct and failed if any error occur
 	if decErr != nil {
+		fmt.Println(decErr)
 		w.WriteHeader(http.StatusBadRequest)
 		u.Respond(w, u.Message(false, "Invalid request"))
 		return
 	}
-	_,_, createdErr := repository.GetEventById(event.ID) // check if event already exists
+	_, createdErr := repository.GetEventById(event.ID) // check if event already exists
 	if createdErr == nil {
 		w.WriteHeader(http.StatusInternalServerError)
 		u.Respond(w, u.Message(false, "Event already Exists"))
@@ -61,12 +61,8 @@ func CreateEvent (w http.ResponseWriter, r *http.Request) {
 }
 
 func DeleteEvent(w http.ResponseWriter, r *http.Request) ()  {
-	id,err := strconv.Atoi(mux.Vars(r)["id"]) // getting id from url request
-	if err != nil || id<1 { //User not found!
-		w.WriteHeader(http.StatusBadRequest)
-		u.Respond(w, u.Message(false, "Invalid Id"))
-		return
-	}
+	id := mux.Vars(r)["id"] // getting id from url request
+
 	delErr1,delErr2 := repository.DeleteEvent(id)
 	if delErr1 != nil {
 		w.WriteHeader(http.StatusNotFound)//User not found!
@@ -93,8 +89,8 @@ func EditEvent(w http.ResponseWriter, r *http.Request) () {
 		return
 	}
 	id := mux.Vars(r)["id"]
-	event,_, dbErr := repository.GetEventById(id) // search user in db and failed if it doesn't exist
-	if dbErr != nil {                           //User not found!
+	event, dbErr := repository.GetEventById(id) // search user in db and failed if it doesn't exist
+	if dbErr != nil {
 		w.WriteHeader(http.StatusNotFound)
 		u.Respond(w, u.Message(false, "User not found"))
 		return
@@ -106,21 +102,26 @@ func EditEvent(w http.ResponseWriter, r *http.Request) () {
 	if dbEditErr != nil {
 		fmt.Println(dbEditErr)
 		w.WriteHeader(http.StatusInternalServerError)
+
 		u.Respond(w, u.Message(false, "Database Connection error"))
 		return
 	}
-	resp := u.Message(true, "Event deleted successfully")
-	resp["event"] = event
+
 	w.WriteHeader(http.StatusOK)
-	u.Respond(w, resp)
+	u.Respond(w, event)
+	w.Header().Set("Content-Type", "application/json")
 }
 
 var updateEventValues = func (event *models.Event,editedEvent *models.Event)  {
+	//Possible changes
 	event.Description = editedEvent.Description
 	event.Name = editedEvent.Name
 	event.EventStartDate = editedEvent.EventStartDate
 	event.EventFinishDate = editedEvent.EventFinishDate
 	event.Status = editedEvent.Status
-	//event.Url = editedEvent.Url
+	event.Url = editedEvent.Url
+	event.Longitude = editedEvent.Longitude
+	event.Latitude= editedEvent.Latitude
 }
+
 
