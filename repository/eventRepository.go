@@ -7,12 +7,27 @@ import (
 func GetEvents() (events [] *models.Event,err error)  {
 	events = make([]*models.Event, 0)
 	err = GetDB().Table("events").Find(&events).Error
+
 	return
 }
 
 func GetEventById(id string ) (event *models.Event,err error) {
 	event = &models.Event{}
+
+	//location, err := GetLocationByEventId(id)
+	//if err != nil {
+	//	fmt.Println("No location found")
+	//}
 	err = GetDB().First(event, id).Error
+
+	//event.Location = models.Location{
+	//	Latitude: location.Latitude,
+	//	Longitude: location.Longitude,
+	//	LocationType: location.LocationType,
+	//	ID: location.ID,
+	//	EventID: location.EventID,
+	//
+	//}
 	return
 }
 

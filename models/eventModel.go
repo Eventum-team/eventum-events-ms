@@ -15,8 +15,9 @@ type Event struct {
 	EventStartDate string
 	EventFinishDate string
 	Status string
-	//Url string
-	Location Location `gorm:"foreignkey:EventId"`
+	Url string
+	Location []Location `gorm:"foreignkey:EventID"`
+
 }
 
 func (event *Event) Validate() (map[string]interface{}, bool) {

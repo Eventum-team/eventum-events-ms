@@ -5,11 +5,11 @@ import (
 )
 type Location struct {
 	//gorm.Model
-	ID uint64 `gorm:"type: serial;"`
+	ID uint64 `gorm:"auto_increment;primary_key"`
 	LocationType string
 	Latitude string
 	Longitude string
-	EventId string
+	EventID string
 }
 
 func (location *Location) validate() (map[string]interface{}, bool) {

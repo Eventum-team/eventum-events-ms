@@ -34,6 +34,7 @@ func init() {
 	}
 
 	db = conn
+	//db.Model(&models.Location{}).AddForeignKey("event_id", "events(id)", "RESTRICT", "RESTRICT")
 	db.Debug().AutoMigrate(&models.Event{}, &models.Location{})
 }
 

@@ -50,8 +50,6 @@ func CreateEvent (w http.ResponseWriter, r *http.Request) {
 		return
 	}
 	_, createdErr := repository.GetEventById(event.ID) // check if event already exists
-fmt.Println(createdErr.Error())
-
 	if createdErr == nil {
 		w.WriteHeader(http.StatusInternalServerError)
 		u.Respond(w, u.Message(false, "Event already Exists"))

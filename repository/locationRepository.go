@@ -1,6 +1,8 @@
 package repository
 
-import "ev-events-ms/models"
+import (
+	"ev-events-ms/models"
+)
 
 func GetLocations() (locations [] *models.Location,err error)  {
 	locations = make([]*models.Location, 0)
@@ -11,6 +13,12 @@ func GetLocations() (locations [] *models.Location,err error)  {
 func GetLocationById(id int) (location *models.Location,err error) {
 	location = &models.Location{}
 	err = GetDB().First(location, id).Error
+	return
+}
+
+func GetLocationByEventId(id string) (location *models.Location,err error) {
+	location = &models.Location{}
+	err = GetDB().Where("event_id = ?",id).First(location).Error
 	return
 }
 
