@@ -30,7 +30,7 @@ services:
     networks:
       - ev-events-network
 
-
+# Volumens to be created to keep data after containers are down
 volumes:
   ev_events_ms:
   ev_events_db:
