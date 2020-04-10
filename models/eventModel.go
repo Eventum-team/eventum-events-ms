@@ -6,8 +6,7 @@ import (
 )
 
 type Event struct {
-	ID string `json:"id"`
-	Counter uint64 `gorm:"auto_increment"`
+	ID uint64 `gorm:"auto_increment" json:"id"`
 	OwnerId string `gorm:"not null" json:"ownerId"`
 	OwnerType string ` gorm:"not null"json:"ownerType"`
 	Name string `gorm:"not null" json:"name"`
@@ -80,6 +79,13 @@ var UpdateEventValues = func (event *Event,editedEvent *Event)  {
 func ValidateDate(date *time.Time) (valid bool){
 	errDate := "0001-01-01 00:00:00 +0000 UTC"
 	return date.String() != errDate
+}
+func ValidateStringDate(date string) (valid bool){
+	_, err := time.Parse(time.RFC3339, date)
+	if err != nil {
+		return false
+	}
+	return true
 }
 
 

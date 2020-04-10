@@ -2,13 +2,12 @@ package service
 
 import (
 	"encoding/json"
-	"errors"
 	"ev-events-ms/models"
 	"ev-events-ms/repository"
 	u "ev-events-ms/utils"
-	"fmt"
 	"github.com/gorilla/mux"
 	"net/http"
+	"strconv"
 )
 
 func GetEvents(w http.ResponseWriter, r *http.Request) () {
@@ -24,7 +23,11 @@ func GetEvents(w http.ResponseWriter, r *http.Request) () {
 }
 
 func GetEventById(w http.ResponseWriter, r *http.Request) () {
-	id := mux.Vars(r)["id"] // get ID from url request
+	id, idErr := strconv.ParseUint(mux.Vars(r)["id"], 10, 64)
+	if idErr != nil {
+		w.WriteHeader(http.StatusBadRequest)
+		u.Error(w, idErr)
+	}
 	event,dbErr := repository.GetEventById(id)
 	if dbErr != nil {
 		w.WriteHeader(http.StatusNotFound)
@@ -44,16 +47,15 @@ func CreateEvent (w http.ResponseWriter, r *http.Request) {
 		u.Error(w, decErr)
 		return
 	}
-	_, createdErr := repository.GetEventById(event.ID) // check if event already exists //NO DEBERIA POR QUE PASAR YO GENERO ID
-	if createdErr == nil {
-		w.WriteHeader(http.StatusInternalServerError)
-		u.Error(w, errors.New("user already exists"))
-		return
-	}
+	//_, createdErr := repository.GetEventById(event.ID) // check if event already exists //NO DEBERIA POR QUE PASAR YO GENERO ID
+	//if createdErr == nil {
+	//	w.WriteHeader(http.StatusInternalServerError)
+	//	u.Error(w, errors.New("user already exists"))
+	//	return
+	//}
 	event.AddInitialStatus() // set status to active
 	valErr := event.Validate()
 	if valErr != nil{
-		fmt.Println(valErr)
 		w.WriteHeader(http.StatusBadRequest)
 		u.Error(w, valErr)
 		return
@@ -74,7 +76,11 @@ func CreateEvent (w http.ResponseWriter, r *http.Request) {
 }
 
 func DeleteEvent(w http.ResponseWriter, r *http.Request) ()  {
-	id := mux.Vars(r)["id"] // getting id from url request
+	id, idErr := strconv.ParseUint(mux.Vars(r)["id"], 10, 64)
+	if idErr != nil {
+		w.WriteHeader(http.StatusBadRequest)
+		u.Error(w, idErr)
+	}
 	delErr1,delErr2 := repository.DeleteEvent(id)
 	if delErr1 != nil {
 		w.WriteHeader(http.StatusNotFound)
@@ -98,7 +104,11 @@ func EditEvent(w http.ResponseWriter, r *http.Request) () {
 		u.Error(w, decodeErr)
 		return
 	}
-	id := mux.Vars(r)["id"]
+	id, idErr := strconv.ParseUint(mux.Vars(r)["id"], 10, 64)
+	if idErr != nil {
+		w.WriteHeader(http.StatusBadRequest)
+		u.Error(w, idErr)
+	}
 	event, dbErr := repository.GetEventById(id) // search user in db and failed if it doesn't exist
 	if dbErr != nil {
 		w.WriteHeader(http.StatusNotFound)

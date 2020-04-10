@@ -1,7 +1,7 @@
 package models
 
 type Location struct {
-	EventId string
+	EventId uint64
 	EventName string
 	Latitude string
 	Longitude string

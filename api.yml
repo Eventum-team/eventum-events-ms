@@ -1,0 +1,243 @@
+#Test with: http://editor.swagger.io/
+
+swagger: '2.0'
+info:
+  version: 1.0.0
+  title: Microservice for Events
+  description: Go + Postgres
+  license:
+    name: Eventum Team
+host: host:8000
+basePath: /ev-events-ms/app
+schemes:
+  - http
+consumes:
+  - application/json
+produces:
+  - application/json
+paths:
+  /events:
+    post:
+      summary: Creates a new event
+      operationId: createEvent
+      parameters:
+        - name: event
+          in: body
+          required: true
+          description: Event Object
+          schema:
+            $ref: '#/definitions/EventInput'
+      responses:
+        '201':
+          description: Created
+        '400':
+          description: Bad Request
+          schema:
+            $ref: '#/definitions/ErrorModel'
+        '500':
+          description: Internal Server Error
+          schema:
+            $ref: '#/definitions/ErrorModel'
+    get:
+      summary: Returns all events
+      operationId: getAllEvents
+      responses:
+        '200':
+          description: Ok
+          schema:
+            $ref: '#/definitions/EventsList'
+        '406':
+          description: Not Acceptable (Invalid Params)
+          schema:
+            $ref: '#/definitions/ErrorModel'
+        '500':
+          description: Internal Server Error
+          schema:
+            $ref: '#/definitions/ErrorModel'
+
+  /events/{id}/:
+    get:
+      summary: Returns an event with the given id
+      operationId: getEventById
+      parameters:
+        - name: id
+          in: path
+          description: The id of the event to be returned
+          required: true
+          type: integer
+      responses:
+        '200':
+          description: Ok
+          schema:
+            $ref: '#/definitions/Events'
+        '404':
+          description: Not Found
+          schema:
+            $ref: '#/definitions/ErrorModel'
+        '406':
+          description: Not Acceptable (Invalid Params)
+          schema:
+            $ref: '#/definitions/ErrorModel'
+        '500':
+          description: unexpected error
+          schema:
+            $ref: '#/definitions/ErrorModel'
+
+    put:
+      summary: Updates an event with the given id
+      operationId: updateEvent
+      parameters:
+        - name: id
+          in: path
+          description: The id of the event to be updated
+          required: true
+          type: integer
+        - name: event
+          in: body
+          required: true
+          description: Event Object
+          schema:
+            $ref: '#/definitions/UserInput'
+      responses:
+        '204':
+          description: No Content
+        '404':
+          description: Not Found
+          schema:
+            $ref: '#/definitions/ErrorModel'
+        '406':
+          description: Not Acceptable (Invalid Params)
+          schema:
+            $ref: '#/definitions/ErrorModel'
+        '500':
+          description: unexpected error
+          schema:
+            $ref: '#/definitions/ErrorModel'
+
+    delete:
+      summary: Deletes an event with the given id
+      operationId: deleteEvent
+      parameters:
+        - name: id
+          in: path
+          description: The id of the event to be deleted
+          required: true
+          type: integer
+      responses:
+        '200':
+          description: Ok
+        '404':
+          description: Not Found
+          schema:
+            $ref: '#/definitions/ErrorModel'
+        '406':
+          description: Not Acceptable (Invalid Params)
+          schema:
+            $ref: '#/definitions/ErrorModel'
+        '500':
+          description: unexpected error
+          schema:
+            $ref: '#/definitions/ErrorModel'
+
+definitions:
+
+  # Events
+  Event:
+    type: object
+    properties:
+      id:
+        type: string
+      ownerId:
+        type: string
+      ownerType:
+        type: string
+      name:
+        type: string
+      status:
+        type: string
+      eventStartDate:
+        type: string
+      eventFinishDate:
+        type: string
+      description:
+        type: string
+      url:
+        type: string
+      latitude:
+        type: string
+      longitude:
+        type: string
+
+  EventInput:
+    type: object
+    properties:
+      ownerId:
+        type: string
+      ownerType:
+        type: string
+      name:
+        type: string
+      status:
+        type: string
+      eventStartDate:
+        type: string
+      eventFinishDate:
+        type: string
+      description:
+        type: string
+      url:
+        type: string
+      latitude:
+        type: string
+      longitude:
+        type: string
+
+  EventList:
+    type: object
+    required:
+      - total
+      - list
+    properties:
+      total:
+        type: number
+      list:
+        type: array
+        items:
+          $ref: '#/definitions/Event'
+
+  Location:
+    type: object
+    properties:
+      eventId:
+        type: string
+      eventName:
+        type: string
+      latitude:
+        type: string
+      longitude:
+        type: string
+
+  LocationList:
+    type: object
+    required:
+      - total
+      - list
+    properties:
+      list:
+        type: array
+        items:
+          $ref: '#/definitions/Location'
+
+  # Errors
+  ErrorModel:
+    type: object
+    required:
+      - message
+      - code
+    properties:
+      error:
+        type: string
+      code:
+        type: number
+      description:
+        type: object

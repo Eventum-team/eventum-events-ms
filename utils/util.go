@@ -7,8 +7,8 @@ import (
 )
 
 
-func Message(status bool, message string) (map[string]interface{}) {
-	return map[string]interface{}{"status": status, "message": message}
+func Message(message string) map[string]interface{} {
+	return map[string]interface{}{ "message": message}
 }
 
 func Respond(w http.ResponseWriter, data interface{} ) {
@@ -21,12 +21,16 @@ func Respond(w http.ResponseWriter, data interface{} ) {
 	}
 }
 
-func Error(w http.ResponseWriter, err error) {
+func Error(w http.ResponseWriter, err error,statusCode int,des string) {
 	if err != nil {
 		Respond(w, struct {
 			Error string `json:"error"`
+			Code int `json:"error"`
+			Description string `json:"error"`
 		}{
 			Error: err.Error(),
+			Code: statusCode,
+			Description: des,
 
 		})
 		return
