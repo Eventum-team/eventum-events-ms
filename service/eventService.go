@@ -6,6 +6,7 @@ import (
 	"ev-events-ms/models"
 	"ev-events-ms/repository"
 	u "ev-events-ms/utils"
+	"fmt"
 	"github.com/gorilla/mux"
 	"net/http"
 )
@@ -49,8 +50,14 @@ func CreateEvent (w http.ResponseWriter, r *http.Request) {
 		u.Error(w, errors.New("user already exists"))
 		return
 	}
-	 event.AddInitialStatus() // set status to active
-	//event.Validate()
+	event.AddInitialStatus() // set status to active
+	valErr := event.Validate()
+	if valErr != nil{
+		fmt.Println(valErr)
+		w.WriteHeader(http.StatusBadRequest)
+		u.Error(w, valErr)
+		return
+	}
 	errDates := event.ProperDates()
 	if errDates != nil{
 		w.WriteHeader(http.StatusBadRequest)
@@ -64,7 +71,6 @@ func CreateEvent (w http.ResponseWriter, r *http.Request) {
 		return
 	}
 	w.WriteHeader(http.StatusCreated)
-
 }
 
 func DeleteEvent(w http.ResponseWriter, r *http.Request) ()  {

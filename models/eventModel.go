@@ -2,7 +2,6 @@ package models
 
 import (
 	"errors"
-	u "ev-events-ms/utils"
 	"time"
 )
 
@@ -32,8 +31,28 @@ var OwnerTypeOptions = []string{
 	"user",
 }
 
-func (event *Event) Validate() (map[string]interface{}, bool) {
-	return u.Message(false, "Requirement passed"), true
+func (event *Event) Validate() (err error) {
+	e := ""
+	if event.Name == ""{
+	//return  errors.New("Invalid fields")
+		e+= "name"
+	}
+	if event.OwnerType == ""{
+		e+= ", ownerType"
+	}
+	if event.OwnerId == ""{
+		e+= ", OwnerId"
+	}
+	if !ValidateDate(&event.EventStartDate){
+		e+= ", eventStartDate"
+	}
+	if !ValidateDate(&event.EventFinishDate){
+		e+= ", eventFinishDate"
+	}
+	if e != ""{
+		return errors.New("invalid Fields: "+ e)
+	}
+	return nil
 }
 
 func (event *Event) AddInitialStatus() {
@@ -58,10 +77,9 @@ var UpdateEventValues = func (event *Event,editedEvent *Event)  {
 	event.Longitude = editedEvent.Longitude
 	event.Latitude= editedEvent.Latitude
 }
-func ValidateDate(date time.Time) (valid bool){
-	valid = true
-
-	return
+func ValidateDate(date *time.Time) (valid bool){
+	errDate := "0001-01-01 00:00:00 +0000 UTC"
+	return date.String() != errDate
 }
 
 
