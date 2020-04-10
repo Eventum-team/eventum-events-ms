@@ -1,0 +1,42 @@
+
+version: '3'
+services:
+  ev-events-ms:
+    container_name: ev-events-ms
+    build: .
+    ports:
+      - 8000:8000
+    restart: on-failure
+    volumes:
+      - ev_events_ms:/usr/src/app/
+    depends_on:
+      - ev-events-db-postgres
+    networks:
+      - ev-events-network
+
+
+  ev-events-db-postgres:
+    image: postgres:latest
+    container_name: ev-events-db
+    environment:
+      - POSTGRES_USER=${db_user}
+      - POSTGRES_PASSWORD=${db_pass}
+      - POSTGRES_DB=${db_name}
+      - DATABASE_HOST=${db_host}
+    ports:
+      - '5433:5432'
+    volumes:
+      - ev_events_db:/var/lib/postgresql/data
+    networks:
+      - ev-events-network
+
+
+volumes:
+  ev_events_ms:
+  ev_events_db:
+
+# Networks to be created to facilitate communication between containers
+networks:
+  ev-events-network:
+    driver: bridge
+
