@@ -2,40 +2,32 @@ package service
 
 import (
 	"encoding/json"
+	"ev-events-ms/models"
 	"ev-events-ms/repository"
 	u "ev-events-ms/utils"
-	"fmt"
 	"net/http"
 	"strings"
+	"time"
 )
 
 type Message struct {
-	FilterType string
-	Params string
+	OwnerType string
+	StatusOption string
+	Date1 time.Time
+	Date2 time.Time
+	EventName string
 }
 
-var statusOptions = []string{
- "upcoming",
- "cancelled",
- "ended",
-}
-var ownerTypeOptions = []string{
-	"group",
-	"user",
-}
+
 func GetEventsByStatus(w http.ResponseWriter, r *http.Request)  {
 	 msg := &Message{}
-	 decodeBody(r,msg)
-	 if msg.FilterType != "status"{
-		 u.Respond(w, u.Message(false, "Wrong filter type"))
-		 return
-	 }
-	for _, opt := range statusOptions {
-		if opt == msg.Params {
+	 decodeBody(w,r,msg)
+	for _, opt := range models.StatusOptions {
+		if opt == msg.StatusOption {
 			events,err := repository.GetEventsByStatus(opt)
 			if err != nil {
 				w.WriteHeader(http.StatusInternalServerError)
-				u.Respond(w, u.Message(false, "Database Connection error"))
+				u.Error(w, err)
 				return
 			}
 			w.WriteHeader(http.StatusOK)
@@ -43,23 +35,20 @@ func GetEventsByStatus(w http.ResponseWriter, r *http.Request)  {
 			return
 		}
 	}
-	w.WriteHeader(http.StatusNotFound)
-	u.Respond(w, u.Message(false, msg.Params + " is not a status"))
+	events := make([]*models.Event, 0)
+	w.WriteHeader(http.StatusBadRequest)
+	u.Respond(w, events)
 }
 
 func GetEventsByOwnerType(w http.ResponseWriter, r *http.Request)  {
 	msg := &Message{}
-	decodeBody(r,msg)
-	if msg.FilterType != "ownertype"{
-		u.Respond(w, u.Message(false, "Wrong filter type"))
-		return
-	}
-	for _, opt := range ownerTypeOptions {
-		if opt == msg.Params {
+	decodeBody(w,r,msg)
+	for _, opt := range models.OwnerTypeOptions {
+		if opt == msg.OwnerType {
 			events,err := repository.GetEventsByOwnerType(opt)
 			if err != nil {
 				w.WriteHeader(http.StatusInternalServerError)
-				u.Respond(w, u.Message(false, "Database Connection error"))
+				u.Error(w, err)
 				return
 			}
 			w.WriteHeader(http.StatusOK)
@@ -67,50 +56,48 @@ func GetEventsByOwnerType(w http.ResponseWriter, r *http.Request)  {
 			return
 		}
 	}
-	w.WriteHeader(http.StatusNotFound)
-	u.Respond(w, u.Message(false, msg.Params + " is not a owner type"))
+	events := make([]*models.Event, 0)
+	w.WriteHeader(http.StatusBadRequest)
+	u.Respond(w, events)
 }
-
-func GetUpcomingEvents(w http.ResponseWriter, r *http.Request)  {
+//"2014-11-12T11:45:26Z"    -> Date Format
+func GetEventsByRangeDate(w http.ResponseWriter, r *http.Request)  {
 	msg := &Message{}
-	decodeBody(r,msg)
-	if msg.FilterType != "upcoming"{
-		u.Respond(w, u.Message(false, "Wrong filter type"))
-		return
-	}
-	v := true
-	//validateDate()
+	decodeBody(w,r,msg)
+	valid1 := models.ValidateDate(msg.Date1)
+	valid2 := models.ValidateDate(msg.Date2)
 
-		if v  {
-			events,err := repository.GetUpcomingEvents(msg.Params)
+		if valid1 && valid2  {
+			events,err := repository.GetEventsByRangeDate(msg.Date1,msg.Date2)
 			if err != nil {
 				w.WriteHeader(http.StatusInternalServerError)
-				u.Respond(w, u.Message(false, "Database Connection error"))
-				return
+				u.Error(w, err)
 			}
+			w.WriteHeader(http.StatusOK)
 			w.WriteHeader(http.StatusOK)
 			u.Respond(w, events)
 			return
 		}
-	w.WriteHeader(http.StatusNotFound)
-	u.Respond(w, u.Message(false, msg.Params + " is not valid date"))
+	events := make([]*models.Event, 0)
+	w.WriteHeader(http.StatusBadRequest)
+	u.Respond(w, events)
 }
 
-//"2014-11-12T11:45:26Z"    -> Date Format
-func GetEventsByDate(w http.ResponseWriter, r *http.Request)  {
-	events,err := repository.GetEvents()
+func GetEventsByName(w http.ResponseWriter, r *http.Request)  {
+	msg := &Message{}
+	decodeBody(w,r,msg)
+	events,err := repository.GetEventsByName(msg.EventName)
 	if err != nil {
-		fmt.Println(err)
 		w.WriteHeader(http.StatusInternalServerError)
-		u.Respond(w, u.Message(false, "Database Connection error"))
+		u.Error(w, err)
 		return
 	}
 	w.WriteHeader(http.StatusOK)
 	u.Respond(w, events)
+	return
 }
 
-func decodeBody(r *http.Request,msg *Message)  {
-
+func decodeBody(w http.ResponseWriter,r *http.Request,msg *Message)  {
 	if r.Body == nil {
 		//http.Error(w, "Please send a request body", 400)
 		return
@@ -121,10 +108,9 @@ func decodeBody(r *http.Request,msg *Message)  {
 		//http.Error(w, err.Error(), 400)
 		return
 	}
-	msg.Params = strings.ToLower(msg.Params)
-	msg.FilterType = strings.ToLower(msg.FilterType)
-
-	return
+	msg.StatusOption = strings.ToLower(msg.StatusOption)
+	msg.OwnerType = strings.ToLower(msg.OwnerType)
 }
+
 
 

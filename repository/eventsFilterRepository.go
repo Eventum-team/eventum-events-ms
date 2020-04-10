@@ -1,6 +1,9 @@
 package repository
 
-import "ev-events-ms/models"
+import (
+	"ev-events-ms/models"
+	"time"
+)
 
 func GetEventsByStatus(status string) (events [] *models.Event,err error)  {
 	events = make([]*models.Event, 0)
@@ -14,15 +17,14 @@ func GetEventsByOwnerType(owner string) (events [] *models.Event,err error)  {
 
 	return
 }
-func GetUpcomingEvents( date string) (events [] *models.Event,err error)  {
+func GetEventsByRangeDate(date1 time.Time, date2 time.Time) (events [] *models.Event,err error)  {
 	events = make([]*models.Event, 0)
-	err = GetDB().Table("events").Where("event_start_date >= ?", date).Find(&events).Error
-
+	err = GetDB().Table("events").Where("event_start_date >= ? AND event_start_date <= ? ", date1, date2).Find(&events).Error
 	return
 }
-func GetEventsByDate() (events [] *models.Event,err error)  {
+func GetEventsByName(name string) (events [] *models.Event,err error)  {
 	events = make([]*models.Event, 0)
-	err = GetDB().Table("events").Find(&events).Error
-
+	str := "%" + name + "%"
+	err = GetDB().Table("events").Where("name LIKE ?", str).Find(&events).Error
 	return
 }
