@@ -7,13 +7,19 @@ import (
 )
 
 
-func Message(message string) map[string]interface{} {
-	return map[string]interface{}{ "message": message}
+func Message(message string, status int) map[string]interface{} {
+	return map[string]interface{}{ "message": message, "status": status}
+}
+func ErrorMessage(err error, status int) map[string]interface{} {
+	return map[string]interface{}{ "message": err.Error(), "status": status}
 }
 
-func Respond(w http.ResponseWriter, data interface{} ) {
-	err := json.NewEncoder(w).Encode(data)
+func Respond(w http.ResponseWriter, data interface{},statusCode int ) {
+	fmt.Println(data)
 	w.Header().Set("Content-Type", "application/json")
+	w.WriteHeader(statusCode)
+	err := json.NewEncoder(w).Encode(data)
+	fmt.Println(w.Header())
 	if err != nil{
 		fmt.Println(err)
 		//Error(w,err)
@@ -21,18 +27,9 @@ func Respond(w http.ResponseWriter, data interface{} ) {
 	}
 }
 
-func Error(w http.ResponseWriter, err error,statusCode int,des string) {
+func Error(w http.ResponseWriter, err error,statusCode int) {
 	if err != nil {
-		Respond(w, struct {
-			Error string `json:"error"`
-			Code int `json:"error"`
-			Description string `json:"error"`
-		}{
-			Error: err.Error(),
-			Code: statusCode,
-			Description: des,
-
-		})
+		Respond(w, ErrorMessage(err,statusCode),statusCode)
 		return
 	}
 

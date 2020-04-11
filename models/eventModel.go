@@ -58,8 +58,8 @@ func (event *Event) AddInitialStatus() {
 	event.Status = StatusOptions[0]
 }
 
-func (event *Event) ProperDates() error  {
-	if event.EventStartDate.After(event.EventFinishDate){
+func  ProperDates(d1 time.Time,d2 time.Time) error  {
+	if d1.After(d2){
 		return errors.New("Start date is later than finish date")
 	}
 	return nil
@@ -80,12 +80,12 @@ func ValidateDate(date *time.Time) (valid bool){
 	errDate := "0001-01-01 00:00:00 +0000 UTC"
 	return date.String() != errDate
 }
-func ValidateStringDate(date string) (valid bool){
-	_, err := time.Parse(time.RFC3339, date)
+func ValidateStringDate(date string) (d time.Time,valid bool){
+	d, err := time.Parse(time.RFC3339, date)
 	if err != nil {
-		return false
+		return d,false
 	}
-	return true
+	return d,true
 }
 
 

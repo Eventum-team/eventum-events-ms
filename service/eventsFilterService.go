@@ -15,17 +15,14 @@ func GetEventsByStatus(w http.ResponseWriter, r *http.Request)  {
 		if opt == status {
 			events,err := repository.GetEventsByStatus(opt)
 			if err != nil {
-				w.WriteHeader(http.StatusInternalServerError)
-				u.Error(w, err)
+				u.Error(w, err,http.StatusInternalServerError)
 				return
 			}
-			w.WriteHeader(http.StatusOK)
-			u.Respond(w, events)
+			u.Respond(w, events,http.StatusOK)
 			return
 		}
 	}
-	w.WriteHeader(http.StatusBadRequest)
-	u.Error(w, errors.New(status + " is not a valid status"))
+	u.Error(w, errors.New(status + " is  a valid status"),http.StatusBadRequest)
 }
 
 func GetEventsByOwnerType(w http.ResponseWriter, r *http.Request)  {
@@ -34,52 +31,45 @@ func GetEventsByOwnerType(w http.ResponseWriter, r *http.Request)  {
 		if opt == ownerType {
 			events,err := repository.GetEventsByOwnerType(opt)
 			if err != nil {
-				w.WriteHeader(http.StatusInternalServerError)
-				u.Error(w, err)
+				u.Error(w, err,http.StatusInternalServerError)
 				return
 			}
-			w.WriteHeader(http.StatusOK)
-			u.Respond(w, events)
+			u.Respond(w, events,http.StatusOK)
 			return
 		}
 	}
-	w.WriteHeader(http.StatusBadRequest)
-	u.Error(w,errors.New(ownerType + " is not a valid owner type"))
+	u.Error(w,errors.New(ownerType + " is not a valid owner type"),http.StatusBadRequest)
 }
 //"2014-11-12T11:45:26Z"    -> Date Format
 func GetEventsByRangeDate(w http.ResponseWriter, r *http.Request)  {
 	start := r.URL.Query().Get("start")
 	end := r.URL.Query().Get("end")
-	valid1 := models.ValidateStringDate(start)
-	valid2 := models.ValidateStringDate(end)
-
+	d1,valid1 := models.ValidateStringDate(start)
+	d2,valid2 := models.ValidateStringDate(end)
 		if valid1 && valid2  {
+			errDates := models.ProperDates(d1,d2)
+			if errDates != nil{
+				u.Error(w, errDates,http.StatusBadRequest)
+				return
+			}
 			events,err := repository.GetEventsByRangeDate(start,end)
 			if err != nil {
-				w.WriteHeader(http.StatusInternalServerError)
-				u.Error(w, err)
+				u.Error(w, err,http.StatusInternalServerError)
 			}
-			w.WriteHeader(http.StatusOK)
-			u.Respond(w, events)
+			u.Respond(w, events,http.StatusOK)
 			return
 		}
-	events := make([]*models.Event, 0)
-	w.WriteHeader(http.StatusBadRequest)
-	u.Respond(w, events)
+	u.Respond(w, u.Message("Invalid date format ",http.StatusBadRequest),http.StatusBadRequest)
 }
 
 func GetEventsByName(w http.ResponseWriter, r *http.Request)  {
-
 	name := r.URL.Query().Get("name")
 	events,err := repository.GetEventsByName(name)
 	if err != nil {
-		w.WriteHeader(http.StatusInternalServerError)
-		u.Error(w, err)
+		u.Error(w, err,http.StatusInternalServerError)
 		return
 	}
-	w.WriteHeader(http.StatusOK)
-	u.Respond(w, events)
-	return
+	u.Respond(w, events,http.StatusOK)
 }
 
 

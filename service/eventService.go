@@ -13,29 +13,25 @@ import (
 func GetEvents(w http.ResponseWriter, r *http.Request) () {
 	events,err := repository.GetEvents()
 	if err != nil {
-		w.WriteHeader(http.StatusInternalServerError)
-		u.Error(w, err)
+		u.Error(w, err,http.StatusInternalServerError)
 		return
 	}
-	w.WriteHeader(http.StatusOK)
-	u.Respond(w, events)
+	u.Respond(w, events,http.StatusOK)
 
 }
 
 func GetEventById(w http.ResponseWriter, r *http.Request) () {
 	id, idErr := strconv.ParseUint(mux.Vars(r)["id"], 10, 64)
 	if idErr != nil {
-		w.WriteHeader(http.StatusBadRequest)
-		u.Error(w, idErr)
+		u.Error(w, idErr,http.StatusBadRequest)
+		return
 	}
 	event,dbErr := repository.GetEventById(id)
 	if dbErr != nil {
-		w.WriteHeader(http.StatusNotFound)
-		u.Error(w, dbErr)
+		u.Error(w, dbErr,http.StatusNotFound)
 		return
 	}
-	w.WriteHeader(http.StatusOK)
-	u.Respond(w, event)
+	u.Respond(w, event,http.StatusOK)
 
 }
 
@@ -43,56 +39,44 @@ func CreateEvent (w http.ResponseWriter, r *http.Request) {
 	event := &models.Event{}
 	decErr := json.NewDecoder(r.Body).Decode(event) //decode the request body
 	if decErr != nil {
-		w.WriteHeader(http.StatusBadRequest)
-		u.Error(w, decErr)
+		u.Error(w, decErr,http.StatusBadRequest)
 		return
 	}
-	//_, createdErr := repository.GetEventById(event.ID) // check if event already exists //NO DEBERIA POR QUE PASAR YO GENERO ID
-	//if createdErr == nil {
-	//	w.WriteHeader(http.StatusInternalServerError)
-	//	u.Error(w, errors.New("user already exists"))
-	//	return
-	//}
 	event.AddInitialStatus() // set status to active
-	valErr := event.Validate()
+	valErr := event.Validate() // validate fields
 	if valErr != nil{
-		w.WriteHeader(http.StatusBadRequest)
-		u.Error(w, valErr)
+		u.Error(w, valErr,http.StatusBadRequest)
 		return
 	}
-	errDates := event.ProperDates()
+	errDates := models.ProperDates(event.EventStartDate,event.EventFinishDate)
 	if errDates != nil{
-		w.WriteHeader(http.StatusBadRequest)
-		u.Error(w, errDates)
+		u.Error(w, errDates,http.StatusBadRequest)
 		return
 	}
 	creationErr := repository.CreateEvent(event)
 	if creationErr != nil {
-		w.WriteHeader(http.StatusInternalServerError)
-		u.Error(w, creationErr)
+		u.Error(w, creationErr,http.StatusInternalServerError)
 		return
 	}
-	w.WriteHeader(http.StatusCreated)
+	u.Respond(w,u.Message( "Event Created Successfully",http.StatusCreated),http.StatusCreated)
 }
 
 func DeleteEvent(w http.ResponseWriter, r *http.Request) ()  {
 	id, idErr := strconv.ParseUint(mux.Vars(r)["id"], 10, 64)
 	if idErr != nil {
-		w.WriteHeader(http.StatusBadRequest)
-		u.Error(w, idErr)
+		u.Error(w, idErr,http.StatusBadRequest)
 	}
 	delErr1,delErr2 := repository.DeleteEvent(id)
 	if delErr1 != nil {
-		w.WriteHeader(http.StatusNotFound)
-		u.Error(w, delErr1)
+		u.Error(w, delErr1,http.StatusNotFound)
 		return
 	}
 	if delErr2 != nil{
-		w.WriteHeader(http.StatusInternalServerError)
-		u.Error(w, delErr2)
+		u.Error(w, delErr2,http.StatusInternalServerError)
 		return
 	}
 	w.WriteHeader(http.StatusNoContent) // 204 doesn't allow body
+	//u.Respond(w,u.Message( "Event Created Successfully"),http.StatusNoContent)
 }
 
 func EditEvent(w http.ResponseWriter, r *http.Request) () {
@@ -100,29 +84,25 @@ func EditEvent(w http.ResponseWriter, r *http.Request) () {
 	editedEvent := &models.Event{}
 	decodeErr := json.NewDecoder(r.Body).Decode(editedEvent) //decode the request body
 	if decodeErr != nil {
-		w.WriteHeader(http.StatusBadRequest)
-		u.Error(w, decodeErr)
+		u.Error(w, decodeErr,http.StatusBadRequest)
 		return
 	}
 	id, idErr := strconv.ParseUint(mux.Vars(r)["id"], 10, 64)
 	if idErr != nil {
-		w.WriteHeader(http.StatusBadRequest)
-		u.Error(w, idErr)
+		u.Error(w, idErr,http.StatusBadRequest)
 	}
 	event, dbErr := repository.GetEventById(id) // search user in db and failed if it doesn't exist
 	if dbErr != nil {
-		w.WriteHeader(http.StatusNotFound)
-		u.Error(w, dbErr)
+		u.Error(w, dbErr,http.StatusNotFound)
 		return
 	}
 	models.UpdateEventValues(event,editedEvent) // update the values
 	dbEditErr := repository.EditEvent(event)
 	if dbEditErr != nil {
-		w.WriteHeader(http.StatusInternalServerError)
-		u.Error(w, dbEditErr)
+		u.Error(w, dbEditErr,http.StatusInternalServerError)
 		return
 	}
-	w.WriteHeader(http.StatusOK)
+	u.Respond(w,u.Message( "Event Updated Successfully",http.StatusOK),http.StatusOK)
 
 }
 
