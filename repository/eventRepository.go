@@ -10,7 +10,7 @@ func GetEvents() (events [] *models.Event,err error)  {
 	return
 }
 
-func GetEventById(id string ) (event *models.Event,err error) {
+func GetEventById(id uint64 ) (event *models.Event,err error) {
 	event = &models.Event{}
 	err = GetDB().First(event, id).Error
 	return
@@ -21,7 +21,7 @@ func CreateEvent(event *models.Event) (err error) {
 	return
 }
 
-func DeleteEvent(id string) (err1 error,err2 error)  {
+func DeleteEvent(id uint64) (err1 error,err2 error)  {
 	event := &models.Event{}
 	err1 = GetDB().First(event,id).Error
 	if err1 != nil {

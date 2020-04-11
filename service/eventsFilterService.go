@@ -1,116 +1,75 @@
 package service
 
 import (
-	"encoding/json"
+	"errors"
 	"ev-events-ms/models"
 	"ev-events-ms/repository"
 	u "ev-events-ms/utils"
 	"net/http"
-	"strings"
-	"time"
 )
-
-type Message struct {
-	OwnerType string
-	StatusOption string
-	Date1 time.Time
-	Date2 time.Time
-	EventName string
-}
 
 
 func GetEventsByStatus(w http.ResponseWriter, r *http.Request)  {
-	 msg := &Message{}
-	 decodeBody(w,r,msg)
+	status := r.URL.Query().Get("status")
 	for _, opt := range models.StatusOptions {
-		if opt == msg.StatusOption {
+		if opt == status {
 			events,err := repository.GetEventsByStatus(opt)
 			if err != nil {
-				w.WriteHeader(http.StatusInternalServerError)
-				u.Error(w, err)
+				u.Error(w, err,http.StatusInternalServerError)
 				return
 			}
-			w.WriteHeader(http.StatusOK)
-			u.Respond(w, events)
+			u.Respond(w, events,http.StatusOK)
 			return
 		}
 	}
-	events := make([]*models.Event, 0)
-	w.WriteHeader(http.StatusBadRequest)
-	u.Respond(w, events)
+	u.Error(w, errors.New(status + " is  a valid status"),http.StatusBadRequest)
 }
 
 func GetEventsByOwnerType(w http.ResponseWriter, r *http.Request)  {
-	msg := &Message{}
-	decodeBody(w,r,msg)
+	ownerType := r.URL.Query().Get("type")
 	for _, opt := range models.OwnerTypeOptions {
-		if opt == msg.OwnerType {
+		if opt == ownerType {
 			events,err := repository.GetEventsByOwnerType(opt)
 			if err != nil {
-				w.WriteHeader(http.StatusInternalServerError)
-				u.Error(w, err)
+				u.Error(w, err,http.StatusInternalServerError)
 				return
 			}
-			w.WriteHeader(http.StatusOK)
-			u.Respond(w, events)
+			u.Respond(w, events,http.StatusOK)
 			return
 		}
 	}
-	events := make([]*models.Event, 0)
-	w.WriteHeader(http.StatusBadRequest)
-	u.Respond(w, events)
+	u.Error(w,errors.New(ownerType + " is not a valid owner type"),http.StatusBadRequest)
 }
 //"2014-11-12T11:45:26Z"    -> Date Format
 func GetEventsByRangeDate(w http.ResponseWriter, r *http.Request)  {
-	msg := &Message{}
-	decodeBody(w,r,msg)
-	valid1 := models.ValidateDate(msg.Date1)
-	valid2 := models.ValidateDate(msg.Date2)
-
+	start := r.URL.Query().Get("start")
+	end := r.URL.Query().Get("end")
+	d1,valid1 := models.ValidateStringDate(start)
+	d2,valid2 := models.ValidateStringDate(end)
 		if valid1 && valid2  {
-			events,err := repository.GetEventsByRangeDate(msg.Date1,msg.Date2)
-			if err != nil {
-				w.WriteHeader(http.StatusInternalServerError)
-				u.Error(w, err)
+			errDates := models.ProperDates(d1,d2)
+			if errDates != nil{
+				u.Error(w, errDates,http.StatusBadRequest)
+				return
 			}
-			w.WriteHeader(http.StatusOK)
-			w.WriteHeader(http.StatusOK)
-			u.Respond(w, events)
+			events,err := repository.GetEventsByRangeDate(start,end)
+			if err != nil {
+				u.Error(w, err,http.StatusInternalServerError)
+			}
+			u.Respond(w, events,http.StatusOK)
 			return
 		}
-	events := make([]*models.Event, 0)
-	w.WriteHeader(http.StatusBadRequest)
-	u.Respond(w, events)
+	u.Respond(w, u.Message("Invalid date format ",http.StatusBadRequest),http.StatusBadRequest)
 }
 
 func GetEventsByName(w http.ResponseWriter, r *http.Request)  {
-	msg := &Message{}
-	decodeBody(w,r,msg)
-	events,err := repository.GetEventsByName(msg.EventName)
+	name := r.URL.Query().Get("name")
+	events,err := repository.GetEventsByName(name)
 	if err != nil {
-		w.WriteHeader(http.StatusInternalServerError)
-		u.Error(w, err)
+		u.Error(w, err,http.StatusInternalServerError)
 		return
 	}
-	w.WriteHeader(http.StatusOK)
-	u.Respond(w, events)
-	return
+	u.Respond(w, events,http.StatusOK)
 }
-
-func decodeBody(w http.ResponseWriter,r *http.Request,msg *Message)  {
-	if r.Body == nil {
-		//http.Error(w, "Please send a request body", 400)
-		return
-	}
-	err := json.NewDecoder(r.Body).Decode(&msg)
-	if err != nil {
-
-		//http.Error(w, err.Error(), 400)
-		return
-	}
-	msg.StatusOption = strings.ToLower(msg.StatusOption)
-	msg.OwnerType = strings.ToLower(msg.OwnerType)
-}
-
 
 

@@ -2,13 +2,11 @@ package models
 
 import (
 	"errors"
-	u "ev-events-ms/utils"
 	"time"
 )
 
 type Event struct {
-	ID string `json:"id"`
-	Counter uint64 `gorm:"auto_increment"`
+	ID uint64 `gorm:"auto_increment" json:"id"`
 	OwnerId string `gorm:"not null" json:"ownerId"`
 	OwnerType string ` gorm:"not null"json:"ownerType"`
 	Name string `gorm:"not null" json:"name"`
@@ -32,16 +30,36 @@ var OwnerTypeOptions = []string{
 	"user",
 }
 
-func (event *Event) Validate() (map[string]interface{}, bool) {
-	return u.Message(false, "Requirement passed"), true
+func (event *Event) Validate() (err error) {
+	e := ""
+	if event.Name == ""{
+	//return  errors.New("Invalid fields")
+		e+= "name"
+	}
+	if event.OwnerType == ""{
+		e+= ", ownerType"
+	}
+	if event.OwnerId == ""{
+		e+= ", OwnerId"
+	}
+	if !ValidateDate(&event.EventStartDate){
+		e+= ", eventStartDate"
+	}
+	if !ValidateDate(&event.EventFinishDate){
+		e+= ", eventFinishDate"
+	}
+	if e != ""{
+		return errors.New("invalid Fields: "+ e)
+	}
+	return nil
 }
 
 func (event *Event) AddInitialStatus() {
 	event.Status = StatusOptions[0]
 }
 
-func (event *Event) ProperDates() error  {
-	if event.EventStartDate.After(event.EventFinishDate){
+func  ProperDates(d1 time.Time,d2 time.Time) error  {
+	if d1.After(d2){
 		return errors.New("Start date is later than finish date")
 	}
 	return nil
@@ -58,10 +76,16 @@ var UpdateEventValues = func (event *Event,editedEvent *Event)  {
 	event.Longitude = editedEvent.Longitude
 	event.Latitude= editedEvent.Latitude
 }
-func ValidateDate(date time.Time) (valid bool){
-	valid = true
-
-	return
+func ValidateDate(date *time.Time) (valid bool){
+	errDate := "0001-01-01 00:00:00 +0000 UTC"
+	return date.String() != errDate
+}
+func ValidateStringDate(date string) (d time.Time,valid bool){
+	d, err := time.Parse(time.RFC3339, date)
+	if err != nil {
+		return d,false
+	}
+	return d,true
 }
 
 

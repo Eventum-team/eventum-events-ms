@@ -20,12 +20,10 @@ func GetLocations(w http.ResponseWriter, r *http.Request) () {
 		locations = append(locations,loc)
 	}
 	if err != nil {
-		w.WriteHeader(http.StatusInternalServerError)
-		u.Error(w, err)
+		u.Error(w, err,http.StatusInternalServerError)
 		return
 	}
-	w.WriteHeader(http.StatusOK)
-	u.Respond(w, locations)
+	u.Respond(w, locations,http.StatusOK)
 }
 
 
