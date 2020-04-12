@@ -24,13 +24,13 @@ services:
       - POSTGRES_DB=${db_name}
       - DATABASE_HOST=${db_host}
     ports:
-      - '5433:5432'
+      - '5432:5432'
     volumes:
       - ev_events_db:/var/lib/postgresql/data
     networks:
       - ev-events-network
 
-# Volumens to be created to keep data after containers are down
+# Volumes to be created to keep data after containers are down
 volumes:
   ev_events_ms:
   ev_events_db:
@@ -39,4 +39,3 @@ volumes:
 networks:
   ev-events-network:
     driver: bridge
-
