@@ -22,9 +22,9 @@ func GetEventsByEventType(owner string) (events [] *models.Event,err error)  {
 	return
 }
 
-func GetEventsByOwner(id uint64 )  (events [] *models.Event,err error) {
+func GetEventsByOwner(id uint64,ownerType string)  (events [] *models.Event,err error) {
 	events = make([]*models.Event, 0)
-	err = GetDB().Table("events").Where("owner_id = ?",id).Find(&events).Error
+	err = GetDB().Table("events").Where("owner_id = ? AND owner_type = ?",id,ownerType).Find(&events).Error
 	return
 }
 

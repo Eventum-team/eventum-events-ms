@@ -5,7 +5,6 @@ import (
 	"ev-events-ms/models"
 	"ev-events-ms/repository"
 	u "ev-events-ms/utils"
-	"github.com/gorilla/mux"
 	"net/http"
 	"strconv"
 )
@@ -44,18 +43,25 @@ func GetEventsByOwnerType(w http.ResponseWriter, r *http.Request)  {
 }
 
 func GetEventsByOwner(w http.ResponseWriter, r *http.Request) () {
-	id, idErr := strconv.ParseUint(mux.Vars(r)["id"], 10, 64)
+	ownerType := r.URL.Query().Get("type")
+	ownerId := r.URL.Query().Get("id")
+	id, idErr := strconv.ParseUint(ownerId, 10, 64)
 	if idErr != nil {
 		u.Error(w, idErr,http.StatusNotAcceptable)
 		return
 	}
-	event,dbErr := repository.GetEventsByOwner(id)
-	if dbErr != nil {
-		u.Error(w, dbErr,http.StatusNotFound)
-		return
+	for _, opt := range models.OwnerTypeOptions {
+		if opt == ownerType {
+			event,dbErr := repository.GetEventsByOwner(id,ownerType)
+			if dbErr != nil {
+				u.Error(w, dbErr,http.StatusNotFound)
+				return
+			}
+			u.Respond(w, event,http.StatusOK)
+			return
+		}
 	}
-	u.Respond(w, event,http.StatusOK)
-
+	u.Error(w,errors.New(ownerType + " is not a valid owner type"),http.StatusBadRequest)
 }
 
 func GetEventsByEventType(w http.ResponseWriter, r *http.Request)  {

@@ -7,7 +7,7 @@ import (
 
 type Event struct {
 	ID uint64 `gorm:"auto_increment" json:"id"`
-	OwnerId string `gorm:"not null" json:"ownerId"`
+	OwnerId uint64 `gorm:"not null" json:"ownerId"`
 	OwnerType string ` gorm:"not null"json:"ownerType"`
 	Name string `gorm:"not null" json:"name"`
 	Status string `gorm:"not null" json:"status"`
@@ -59,7 +59,7 @@ func (event *Event) Validate() (err error) {
 	if et == false{
 		e+= " eventType"
 	}
-	if event.OwnerId == ""{
+	if event.OwnerId == 0 {
 		e+= " OwnerId"
 	}
 	if !ValidateDate(&event.EventStartDate){
