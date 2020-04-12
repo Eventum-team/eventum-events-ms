@@ -8,7 +8,7 @@ info:
   license:
     name: Eventum Team
 host: host:8000
-basePath: /ev-events-ms/app
+basePath: /
 schemes:
   - http
 consumes:
@@ -266,7 +266,7 @@ paths:
           in: query
           description: id of a group or user
           required: true
-          type: int
+          type: integer
         - name: type
           in: query
           description: owner type ?type=(group, user).
