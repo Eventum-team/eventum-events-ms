@@ -29,7 +29,9 @@ paths:
             $ref: '#/definitions/EventInput'
       responses:
         '201':
-          description: Created
+          description: Event Created Successfully
+          schema:
+            $ref: '#/definitions/MessageModel'
         '400':
           description: Bad Request
           schema:
@@ -46,16 +48,12 @@ paths:
           description: Ok
           schema:
             $ref: '#/definitions/EventsList'
-        '406':
-          description: Not Acceptable (Invalid Params)
-          schema:
-            $ref: '#/definitions/ErrorModel'
         '500':
           description: Internal Server Error
           schema:
             $ref: '#/definitions/ErrorModel'
 
-  /events/{id}/:
+  /events/{id}:
     get:
       summary: Returns an event with the given id
       operationId: getEventById
@@ -69,7 +67,7 @@ paths:
         '200':
           description: Ok
           schema:
-            $ref: '#/definitions/Events'
+            $ref: '#/definitions/Event'
         '404':
           description: Not Found
           schema:
@@ -97,10 +95,12 @@ paths:
           required: true
           description: Event Object
           schema:
-            $ref: '#/definitions/UserInput'
+            $ref: '#/definitions/EventInput'
       responses:
-        '204':
-          description: No Content
+        '200':
+          description: ok
+          schema:
+            $ref: '#/definitions/MessageModel'
         '404':
           description: Not Found
           schema:
@@ -124,8 +124,8 @@ paths:
           required: true
           type: integer
       responses:
-        '200':
-          description: Ok
+        '204':
+          description: No content
         '404':
           description: Not Found
           schema:
@@ -139,8 +139,118 @@ paths:
           schema:
             $ref: '#/definitions/ErrorModel'
 
-definitions:
 
+  /events/filter/locations:
+    get:
+      summary: Returns all events locations
+      operationId: getLocations
+      responses:
+        '200':
+          description: Ok
+          schema:
+            $ref: '#/definitions/LocationsList'
+        '500':
+          description: Internal Server Error
+          schema:
+            $ref: '#/definitions/ErrorModel'
+
+  /events/filter/status:
+    get:
+      summary: Returns all events given a status. ?status=(active, cancelled, ended)
+      operationId: getEventsByStatus
+      parameters:
+        - name: status
+          in: path
+          description: (active, cancelled, ended)
+          required: true
+          type: string
+      responses:
+        '200':
+          description: Ok
+          schema:
+            $ref: '#/definitions/EventsList'
+        '400':
+          description: Status Bad Request
+          schema:
+            $ref: '#/definitions/EventsList'
+        '500':
+          description: Internal Server Error
+          schema:
+            $ref: '#/definitions/ErrorModel'
+
+  /events/filter/ownerType:
+    get:
+      summary: Returns all events given a owner type. ?type=(group, user).
+      operationId: getEventsByOwnerType
+      parameters:
+        - name: type
+          in: path
+          description: (group, user)
+          required: true
+          type: string
+      responses:
+        '200':
+          description: Ok
+          schema:
+            $ref: '#/definitions/EventsList'
+        '400':
+          description: Status Bad Request
+          schema:
+            $ref: '#/definitions/EventsList'
+        '500':
+          description: Internal Server Error
+          schema:
+            $ref: '#/definitions/ErrorModel'
+
+  /events/filter/name:
+    get:
+      summary: Returns all events where the string submited is part of their names. ?name=(string)
+      operationId: getEventsByName
+      parameters:
+        - name: name
+          in: path
+          description: provide a substring of an event name
+          required: true
+          type: string
+      responses:
+        '200':
+          description: Ok
+          schema:
+            $ref: '#/definitions/EventsList'
+        '400':
+          description: Status Bad Request
+          schema:
+            $ref: '#/definitions/EventsList'
+        '500':
+          description: Internal Server Error
+          schema:
+            $ref: '#/definitions/ErrorModel'
+
+  /events/filter/rangeDate:
+    get:
+      summary: Returns all events given range date. ?start&end
+      operationId: getEventsByRangeDate
+      parameters:
+        - name: name
+          in: path
+          description: date format "2000-01-01T00:00:00Z"
+          required: true
+          type: string
+      responses:
+        '200':
+          description: Ok
+          schema:
+            $ref: '#/definitions/EventsList'
+        '400':
+          description: Status Bad Request
+          schema:
+            $ref: '#/definitions/EventsList'
+        '500':
+          description: Internal Server Error
+          schema:
+            $ref: '#/definitions/ErrorModel'
+
+definitions:
   # Events
   Event:
     type: object
@@ -192,7 +302,7 @@ definitions:
       longitude:
         type: string
 
-  EventList:
+  EventsList:
     type: object
     required:
       - total
@@ -217,7 +327,7 @@ definitions:
       longitude:
         type: string
 
-  LocationList:
+  LocationsList:
     type: object
     required:
       - total
@@ -230,6 +340,19 @@ definitions:
 
   # Errors
   ErrorModel:
+    type: object
+    required:
+      - message
+      - code
+    properties:
+      error:
+        type: string
+      code:
+        type: number
+      description:
+        type: object
+
+  MessageModel:
     type: object
     required:
       - message

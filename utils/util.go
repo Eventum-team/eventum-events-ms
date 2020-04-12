@@ -15,11 +15,9 @@ func ErrorMessage(err error, status int) map[string]interface{} {
 }
 
 func Respond(w http.ResponseWriter, data interface{},statusCode int ) {
-	fmt.Println(data)
 	w.Header().Set("Content-Type", "application/json")
 	w.WriteHeader(statusCode)
 	err := json.NewEncoder(w).Encode(data)
-	fmt.Println(w.Header())
 	if err != nil{
 		fmt.Println(err)
 		//Error(w,err)

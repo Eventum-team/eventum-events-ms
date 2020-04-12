@@ -10,6 +10,8 @@ func HandleEventFilterRequests()  {
 	router.HandleFunc("/events/filter/ownerType", service.GetEventsByOwnerType).Methods("GET")
 	router.HandleFunc("/events/filter/rangeDate", service.GetEventsByRangeDate).Methods("GET")
 	router.HandleFunc("/events/filter/name", service.GetEventsByName).Methods("GET")
+	router.HandleFunc("/events/filter/eventType", service.GetEventsByEventType).Methods("GET")
+	router.HandleFunc("/events/filter/owner/{id}", service.GetEventsByOwner).Methods("GET")
 
 
 }

@@ -11,13 +11,13 @@ type Event struct {
 	OwnerType string ` gorm:"not null"json:"ownerType"`
 	Name string `gorm:"not null" json:"name"`
 	Status string `gorm:"not null" json:"status"`
+	EventType string `gorm:"not null" json:"eventType"`
 	EventStartDate time.Time `json:"eventStartDate"`
 	EventFinishDate time.Time `json:"eventFinishDate"`
 	Description string `json:"description"`
 	Url string `json:"url"`
 	Latitude string `json:"latitude"`
 	Longitude string `json:"longitude"`
-
 }
 
 var StatusOptions = []string{
@@ -30,23 +30,43 @@ var OwnerTypeOptions = []string{
 	"user",
 }
 
+var EventTypeOptions = []string{
+	"official",
+	"unofficial",
+}
+
+
 func (event *Event) Validate() (err error) {
 	e := ""
 	if event.Name == ""{
-	//return  errors.New("Invalid fields")
-		e+= "name"
+		e+= " name"
 	}
-	if event.OwnerType == ""{
-		e+= ", ownerType"
+	ot:= false
+	for _, val :=range OwnerTypeOptions{
+		if event.OwnerType == val{
+			ot=true
+		}
+	}
+	if ot == false{
+		e+= "ownerType"
+	}
+	et:= false
+	for _, val :=range EventTypeOptions{
+		if event.EventType == val{
+			et=true
+		}
+	}
+	if et == false{
+		e+= " eventType"
 	}
 	if event.OwnerId == ""{
-		e+= ", OwnerId"
+		e+= " OwnerId"
 	}
 	if !ValidateDate(&event.EventStartDate){
-		e+= ", eventStartDate"
+		e+= " eventStartDate"
 	}
 	if !ValidateDate(&event.EventFinishDate){
-		e+= ", eventFinishDate"
+		e+= " eventFinishDate"
 	}
 	if e != ""{
 		return errors.New("invalid Fields: "+ e)
@@ -75,6 +95,7 @@ var UpdateEventValues = func (event *Event,editedEvent *Event)  {
 	event.Url = editedEvent.Url
 	event.Longitude = editedEvent.Longitude
 	event.Latitude= editedEvent.Latitude
+	event.EventType = editedEvent.EventType
 }
 func ValidateDate(date *time.Time) (valid bool){
 	errDate := "0001-01-01 00:00:00 +0000 UTC"

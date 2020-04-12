@@ -23,7 +23,7 @@ func GetEvents(w http.ResponseWriter, r *http.Request) () {
 func GetEventById(w http.ResponseWriter, r *http.Request) () {
 	id, idErr := strconv.ParseUint(mux.Vars(r)["id"], 10, 64)
 	if idErr != nil {
-		u.Error(w, idErr,http.StatusBadRequest)
+		u.Error(w, idErr,http.StatusNotAcceptable)
 		return
 	}
 	event,dbErr := repository.GetEventById(id)

@@ -5,7 +5,9 @@ import (
 	"ev-events-ms/models"
 	"ev-events-ms/repository"
 	u "ev-events-ms/utils"
+	"github.com/gorilla/mux"
 	"net/http"
+	"strconv"
 )
 
 
@@ -39,6 +41,37 @@ func GetEventsByOwnerType(w http.ResponseWriter, r *http.Request)  {
 		}
 	}
 	u.Error(w,errors.New(ownerType + " is not a valid owner type"),http.StatusBadRequest)
+}
+
+func GetEventsByOwner(w http.ResponseWriter, r *http.Request) () {
+	id, idErr := strconv.ParseUint(mux.Vars(r)["id"], 10, 64)
+	if idErr != nil {
+		u.Error(w, idErr,http.StatusNotAcceptable)
+		return
+	}
+	event,dbErr := repository.GetEventsByOwner(id)
+	if dbErr != nil {
+		u.Error(w, dbErr,http.StatusNotFound)
+		return
+	}
+	u.Respond(w, event,http.StatusOK)
+
+}
+
+func GetEventsByEventType(w http.ResponseWriter, r *http.Request)  {
+	eventType := r.URL.Query().Get("type")
+	for _, opt := range models.EventTypeOptions {
+		if opt == eventType {
+			events,err := repository.GetEventsByEventType(opt)
+			if err != nil {
+				u.Error(w, err,http.StatusInternalServerError)
+				return
+			}
+			u.Respond(w, events,http.StatusOK)
+			return
+		}
+	}
+	u.Error(w,errors.New(eventType + " is not a valid owner type"),http.StatusBadRequest)
 }
 //"2014-11-12T11:45:26Z"    -> Date Format
 func GetEventsByRangeDate(w http.ResponseWriter, r *http.Request)  {
