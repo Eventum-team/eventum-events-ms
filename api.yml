@@ -160,7 +160,7 @@ paths:
       operationId: getEventsByStatus
       parameters:
         - name: status
-          in: path
+          in: query
           description: (active, cancelled, ended)
           required: true
           type: string
@@ -184,7 +184,7 @@ paths:
       operationId: getEventsByOwnerType
       parameters:
         - name: type
-          in: path
+          in: query
           description: (group, user)
           required: true
           type: string
@@ -208,7 +208,7 @@ paths:
       operationId: getEventsByName
       parameters:
         - name: name
-          in: path
+          in: query
           description: provide a substring of an event name
           required: true
           type: string
@@ -226,14 +226,50 @@ paths:
           schema:
             $ref: '#/definitions/ErrorModel'
 
+
+
   /events/filter/rangeDate:
     get:
       summary: Returns all events given range date. ?start&end
       operationId: getEventsByRangeDate
       parameters:
-        - name: name
-          in: path
+        - name: start
+          in: query
           description: date format "2000-01-01T00:00:00Z"
+          required: true
+          type: string
+        - name: end
+          in: query
+          description: date format "2000-01-01T00:00:00Z"
+          required: true
+          type: string
+      responses:
+        '200':
+          description: Ok
+          schema:
+            $ref: '#/definitions/EventsList'
+        '400':
+          description: Status Bad Request
+          schema:
+            $ref: '#/definitions/EventsList'
+        '500':
+          description: Internal Server Error
+          schema:
+            $ref: '#/definitions/ErrorModel'
+
+  /events/filter/owner:
+    get:
+      summary: Returns all event from an specific user or group ?id={id}&type=(gorup,user)
+      operationId: getEventsByOwner
+      parameters:
+        - name: id
+          in: query
+          description: id of a group or user
+          required: true
+          type: int
+        - name: type
+          in: query
+          description: owner type ?type=(group, user).
           required: true
           type: string
       responses:
